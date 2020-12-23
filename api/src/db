@@ -1,0 +1,16 @@
+matchid: int
+
+teamone: string
+teamtwo: string
+oddsone: float
+oddstwo: float
+oddstie: float
+sport: string
+country: string
+league: string
+datetime: DATETIME
+completed: boolean
+// need way to find if cancelled
+
+
+select oddsone, oddstwo from table where sport == soccer and league == bundelega
