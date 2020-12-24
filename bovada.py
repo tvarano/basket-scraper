@@ -12,6 +12,10 @@ class Match:
     odds2: float
     oddsDraw: float
     description: str
+    sport: str
+    country: str
+    league: str
+    time: int
     matchID: int
 
 def getSoccerMatches():
@@ -40,6 +44,10 @@ def getSoccerMatches():
                         matchID = e['id']
                         team1 = e['competitors'][0]['name']
                         team2 = e['competitors'][1]['name']
+                        sport = e['sport']
+                        country = l
+                        league = l
+                        time = e['startTime']
                     except:
                         print("Invalid event - " + l)
 
@@ -53,7 +61,7 @@ def getSoccerMatches():
                                         odds2 = outcome['price']['decimal']
                                     if outcome['description'] == 'Draw':
                                         oddsDraw = outcome['price']['decimal']
-                                match = Match(team1, team2, odds1, odds2, oddsDraw, description, matchID)
+                                match = Match(team1, team2, odds1, odds2, oddsDraw, description, sport, country, league, time, matchID)
                                 matches.append(match)
                             except:
                                 print("Odds not valid " + l)
