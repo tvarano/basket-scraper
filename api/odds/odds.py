@@ -10,28 +10,29 @@ DATABASE = 'odds.db'
 def home(): 
     return "why are you here"
 
-@app.route('/scrape', methods=['POST'])
+@app.route('/scrape', methods=['GET'])
 def scrape_run(): 
     # check creds? no need to yet
     # insert
     cur = get_db().cursor()
         
 
-@app.route('/decided', methods=['GET', 'POST'])
-def decide_matches(): 
+@app.route('/decided')
+def get_decided(): 
     cur = get_db().cursor()
-    if request.method == 'POST':
-        # take the input for decided matches. 
-        # update their "completed" information
-        # clean week-old completed matches
-        cur.commit()
-    else: 
-        # get all decided matches
-        cur.execute('SELECT * FROM odds WHERE Completed = true')
+    # take the input for decided matches. 
+    # update their "completed" information
+    # clean week-old completed matches
+    cur.commit()
 
-        rows = curr.fetchall()
-        for r in rows: 
-            print(row)
+@app.route('/put/decided')
+def decide_matches():
+    # get all decided matches
+    cur.execute('SELECT * FROM odds WHERE Completed = true')
+
+    rows = curr.fetchall()
+    for r in rows: 
+        print(row)
 
 
 def get_db():
