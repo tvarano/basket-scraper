@@ -29,3 +29,7 @@ Country varchar(255),
 League varchar(255),
 DateTime datetime, 
 Completed boolean NOT NULL
+
+leagues
+14
+

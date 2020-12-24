@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, g
 import json
 import datetime as DT
 import sqlite3
+import bovada
 
 app = Flask(__name__)
 DATABASE = 'odds.db'
@@ -14,7 +15,20 @@ def home():
 def scrape_run(): 
     # check creds? no need to yet
     # insert
+    ms = bovada.getSoccerMatches()
     cur = get_db().cursor()
+
+    for m in ms:
+        cur.execute(("INSERT INTO odds "
+                    "(MatchId, TeamOne, TeamTwo, Description, OddsOne, OddsTwo, OddsTie, Sport, Country, League, DateTime, Completed) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, false)"), 
+                    (m.matchID, m.team1, m.team2, m.description, m.odds1,
+                     m.odds2, m.oddsDraw, m.sport, m.country, m.league, m.time))
+
+    json = "["
+    for m in ms: 
+        json += m.to_json() 
+    return json + "]"
         
 
 @app.route('/decided')
@@ -23,7 +37,6 @@ def get_decided():
     # take the input for decided matches. 
     # update their "completed" information
     # clean week-old completed matches
-    cur.commit()
 
 @app.route('/put/decided')
 def decide_matches():
@@ -47,6 +60,7 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         print('db closed.')
+        db.commit()
         db.close()
 
 # given an array of matchids

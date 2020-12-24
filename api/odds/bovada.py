@@ -1,9 +1,12 @@
 import requests
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
+import re
 
 # Constants
 sports = ['football','soccer','basketball','golf','ufc-mma','tennis','baseball','boxing','hockey']
 
+@dataclass_json
 @dataclass
 class Match:
     team1: str
@@ -45,10 +48,12 @@ def getSoccerMatches():
                         team1 = e['competitors'][0]['name']
                         team2 = e['competitors'][1]['name']
                         sport = e['sport']
-                        country = l
-                        league = l
+                        lc = parse_lc(re.search("/soccer/([A-Za-z-]+)", l)[1])
+                        league = lc[1]
+                        country = lc[0]
                         time = e['startTime']
-                    except:
+                    except Exception as e:
+                        print(e)
                         print("Invalid event - " + l)
 
                     for m in e['displayGroups'][0]['markets']:
@@ -70,4 +75,21 @@ def getSoccerMatches():
     
     return matches    
 
-print(getSoccerMatches())
+# def to_json(matches): 
+    
+# return country, league
+def parse_lc(reg): 
+    if reg == 'uefa-champions-league':
+        return ("UEFA Champions League", "UEFA Champions League")
+    elif reg == "south-america": 
+        return ("South America", "South America")
+    elif "-" in reg:
+        sp = reg.split("-")
+        return (sp[0].capitalize(), reg[len(sp[0])+1:].capitalize())
+    else: 
+        return (reg.capitalize(), reg.replace("-", " ").capitalize())
+
+if __name__ == '__main__':
+    mat = getSoccerMatches()
+    for m in mat: 
+        print(m)
