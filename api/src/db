@@ -14,3 +14,18 @@ completed: boolean
 
 
 select oddsone, oddstwo from table where sport == soccer and league == bundelega
+
+
+
+MatchId int NOT NULL, 
+TeamOne varchar(255),
+TeamTwo varchar(255), 
+Description varchar(255),
+OddsOne float(6), 
+OddsTwo float(6), 
+OddsTie float(6), 
+Sport varchar(255),
+Country varchar(255),
+League varchar(255),
+DateTime datetime, 
+Completed boolean NOT NULL
