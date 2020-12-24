@@ -27,13 +27,34 @@ def scrape_run():
 
     json = "["
     for m in ms: 
-        json += m.to_json() 
+        json += m.to_json() + ", "
     return json + "]"
+
+# takes filter as json string {key: value}
+@app.route('/search')    
+def get_matches(): 
+    # if get, get all
+    # if post, get according to filters
+    cur = get_db().cursor()
+    if request.method == 'GET': 
+        cur.execute('SELECT * FROM odds')
+    else: 
+        fs = json.loads(request.data)
+        if len(fs) != 0: 
+            q_i = bovada.filter_query(fs)
+            cur.execute(q_i[0], tuple(q_i[1]))
+        else: 
+            cur.execute('SELECT * FROM odds')
         
+    return to_json(cur.fetchall(), cur.description)
+        
+    
 
 @app.route('/decided')
 def get_decided(): 
     cur = get_db().cursor()
+    cur.execute('SELECT * FROM odds WHERE Completed = true')
+    rows = cursor.fetchall()
     # take the input for decided matches. 
     # update their "completed" information
     # clean week-old completed matches
@@ -41,7 +62,6 @@ def get_decided():
 @app.route('/put/decided')
 def decide_matches():
     # get all decided matches
-    cur.execute('SELECT * FROM odds WHERE Completed = true')
 
     rows = curr.fetchall()
     for r in rows: 
@@ -73,8 +93,9 @@ def clean_old_matches():
     yesterday = (today - DT.timedelta(days=1)).strftime("%Y-%m-%d")
     cur.execute('DELETE FROM odds WHERE Completed = true AND DateTime < ?', (yesterday))
 
-def to_json(rows): 
-    return "json"
+def to_json(rows, desc): 
+    items = [dict(zip([key[0] for key in desc], row)) for row in rows]
+    return json.dumps(items)
 
 if __name__ == '__main__':
     app.run()
