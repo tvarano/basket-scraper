@@ -1,7 +1,7 @@
 
 import os
 import tempfile
-
+import json
 import pytest
 
 import odds
@@ -11,7 +11,6 @@ import odds
 def client():
     db_fd, odds.app.config['DATABASE'] = tempfile.mkstemp()
     odds.app.config['TESTING'] = True
-    print("HELLOO")
 
     yield odds.app.test_client() 
 
@@ -23,7 +22,16 @@ def test_root(client):
     print(rv.data)
     assert rv.data == b"why are you here"
 
-def test_scrape(client):
-    rv = client.get('/scrape')
+# def test_scrape(client):
+#     rv = client.get('/scrape')
+#     print(rv.data)
+#     assert False
+
+def test_search(client): 
+    rv = client.get('/search')
     print(rv.data)
-    assert True
+
+def test_search_put(client): 
+    rv = client.post('/search', data=json.dumps({'Country': 'Germany'}))
+    print(rv.data)
+    assert False

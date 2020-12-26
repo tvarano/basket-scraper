@@ -5,41 +5,23 @@ import re
 
 # Constants
 sports = ['football','soccer','basketball','golf','ufc-mma','tennis','baseball','boxing','hockey']
-filter_headers = ['MatchId', 'Team', 'OddsWin', 'OddsTie', 'Sport', 'Country', 'League', 'DateTime', 'Completed']
 
-def to_filter(k, v): 
-    if k == 'Team': 
-        return ('(TeamOne = ? OR TeamTwo = ?)', [v, v])
-    elif k == 'OddsWin': 
-        return ('(OddsOne = ? OR OddsTwo = ?)', [v, v])
-    else: 
-        return (f'{k} = ?', [v])
-
-def filter_query(json_obj): 
-    query = 'SELECT * FROM odds WHERE'
-    inputs = []
-    for k, v in json_obj
-        to_f = to_filter(k, v)
-        query += f' {to_f[0]} AND'
-        inputs += to_f[1]
-    
-    # take off last and
-    return (query[:len(query) - 4], inputs)
 
 @dataclass_json
 @dataclass
 class Match:
-    team1: str
-    team2: str
-    odds1: float
-    odds2: float
-    oddsDraw: float
-    description: str
-    sport: str
-    country: str
-    league: str
-    time: int
-    matchID: int
+    # fields formatted weird to correspond to db
+    TeamOne: str
+    TeamTwo: str
+    OddsOne: float
+    OddsTwo: float
+    OddsTie: float
+    Description: str
+    Sport: str
+    Country: str
+    League: str
+    DateTime: int
+    MatchId: int
 
 def getSoccerMatches():
     url_for_leagues = "https://services.bovada.lv/services/sports/event/v2/nav/A/description/soccer?lang=en"

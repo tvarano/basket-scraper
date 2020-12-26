@@ -3,6 +3,7 @@ import json
 import datetime as DT
 import sqlite3
 import bovada
+import format_query
 
 app = Flask(__name__)
 DATABASE = 'odds.db'
@@ -19,19 +20,19 @@ def scrape_run():
     cur = get_db().cursor()
 
     for m in ms:
-        cur.execute(("INSERT INTO odds "
-                    "(MatchId, TeamOne, TeamTwo, Description, OddsOne, OddsTwo, OddsTie, Sport, Country, League, DateTime, Completed) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, false)"), 
-                    (m.matchID, m.team1, m.team2, m.description, m.odds1,
-                     m.odds2, m.oddsDraw, m.sport, m.country, m.league, m.time))
+        cur.execute(("INSERT OR REPLACE INTO odds "
+                    "(MatchId, TeamOne, TeamTwo, Description, OddsOne, OddsTwo, OddsTie, Sport, Country, League, DateTime) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), 
+                    (m.MatchId, m.TeamOne, m.TeamTwo, m.Description, m.OddsOne,
+                     m.OddsTwo, m.OddsTie, m.Sport, m.Country, m.League, m.DateTime))
 
     json = "["
     for m in ms: 
         json += m.to_json() + ", "
-    return json + "]"
+    return json.rstrip(", ") + "]"
 
 # takes filter as json string {key: value}
-@app.route('/search')    
+@app.route('/search', methods=['GET', 'POST'])    
 def get_matches(): 
     # if get, get all
     # if post, get according to filters
@@ -40,16 +41,17 @@ def get_matches():
         cur.execute('SELECT * FROM odds')
     else: 
         fs = json.loads(request.data)
+        # format for filters shown in dbformat file
         if len(fs) != 0: 
-            q_i = bovada.filter_query(fs)
+            q_i = format_query.filter_query(fs)
             cur.execute(q_i[0], tuple(q_i[1]))
         else: 
             cur.execute('SELECT * FROM odds')
         
-    return to_json(cur.fetchall(), cur.description)
+    return format_query.to_json(cur.fetchall(), cur.description)
         
     
-
+# just a shortcut for searching with completed=trues
 @app.route('/decided')
 def get_decided(): 
     cur = get_db().cursor()
@@ -58,6 +60,7 @@ def get_decided():
     # take the input for decided matches. 
     # update their "completed" information
     # clean week-old completed matches
+    return format_query.to_json(rows, cur.description)
 
 @app.route('/put/decided')
 def decide_matches():
@@ -92,10 +95,6 @@ def clean_old_matches():
     today = DT.date.today()
     yesterday = (today - DT.timedelta(days=1)).strftime("%Y-%m-%d")
     cur.execute('DELETE FROM odds WHERE Completed = true AND DateTime < ?', (yesterday))
-
-def to_json(rows, desc): 
-    items = [dict(zip([key[0] for key in desc], row)) for row in rows]
-    return json.dumps(items)
 
 if __name__ == '__main__':
     app.run()
